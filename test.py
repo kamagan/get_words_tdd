@@ -16,6 +16,14 @@ class Test(TestCase):
         self.assertEqual(text, dic.text)
         stream.close()
 
+    def test_get_content_after_close_stream(self):
+        text = 'Some text date.'
+        stream = StringIO(text)
+        dic = DictionaryForText(stream)
+        stream.close()
+
+        self.assertEqual(text, dic.text)
+
     def test_prepare_simple(self):
         text = 'text date \nand more text'
         stream = StringIO(text)
