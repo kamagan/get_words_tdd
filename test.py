@@ -14,3 +14,12 @@ class Test(TestCase):
         stream = StringIO(text)
         self.assertEqual(text, getwords.get_content(stream))
         stream.close()
+
+    def test_prepare_simple(self):
+        text = 'text date \nand more text'
+        stream = StringIO(text)
+        self.assertEqual(
+            {'text': 2, 'date': 1, 'and': 1, 'more': 1},
+            getwords.prepare(stream)
+        )
+        stream.close()
