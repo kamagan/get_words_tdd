@@ -38,13 +38,13 @@ class Test(TestCase):
             dic.prepare()
         )
 
-    def test_prepare_text_with_punctuation_marks(self):
+    def test_prepare_text_with_punctuation_marks_and_other_symbols(self):
         self.stream = StringIO(
-            'text, «date». and? {more}! [text]: "text"; text…; (text) “text” — text'
+            'text, «date». and? {more}! [text]: "text"; text…; (text) “text” — text 2date'
         )
         dic = DictionaryForText(self.stream)
         self.assertEqual(
-            {'text': 7, 'date': 1, 'and': 1, 'more': 1},
+            {'text': 7, 'date': 2, 'and': 1, 'more': 1},
             dic.prepare()
         )
 

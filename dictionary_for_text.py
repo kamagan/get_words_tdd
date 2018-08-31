@@ -16,7 +16,7 @@ class DictionaryForText:
         return self.__drop['short']
 
     def prepare(self):
-        row = re.split('[\s.,:;—!?…\(\)\{\}\[\]\"«»“”]+', self.text)
+        row = re.split('[^a-zA-Z\-\'’]+', self.text)
 
         words = {}
         for word in row:
@@ -35,7 +35,7 @@ class DictionaryForText:
 
     @staticmethod
     def _short_checker(word):
-        return len(word) < 3
+        return re.match('.*[a-zA-Z]{3,}.*', word) is None
 
     @classmethod
     def _drop_short_words(cls, words):
