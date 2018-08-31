@@ -4,7 +4,7 @@ import re
 class DictionaryForText:
 
     def __init__(self, stream):
-        self._text = self.get_content(stream)
+        self._text = DictionaryForText._get_content(stream)
 
     def get_text(self):
         return self._text
@@ -24,5 +24,5 @@ class DictionaryForText:
         return words
 
     @staticmethod
-    def get_content(stream):
+    def _get_content(stream):
         return stream.read()
