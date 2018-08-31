@@ -12,7 +12,7 @@ class DictionaryForText:
     text = property(get_text, None, None, '')
 
     def prepare(self):
-        row = re.split('[\s]+', self.text)
+        row = re.split('[\s.,:;—!?…]+', self.text)
 
         words = {}
         for word in row:

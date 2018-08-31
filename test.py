@@ -37,3 +37,14 @@ class Test(TestCase):
             {'text': 2, 'date': 1, 'and': 1, 'more': 1},
             dic.prepare()
         )
+
+    def test_prepare_text_with_punctuation_marks(self):
+        self.stream = StringIO(
+            'text, date. and? more! text: text; text…; text — text'
+        )
+        dic = DictionaryForText(self.stream)
+        self.assertEqual(
+            {'text': 6, 'date': 1, 'and': 1, 'more': 1},
+            dic.prepare()
+        )
+
