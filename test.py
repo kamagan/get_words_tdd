@@ -7,29 +7,33 @@ from io import StringIO
 
 class Test(TestCase):
 
+    def setUp(self):
+        self.stream = None
+
+    def tearDown(self):
+        if self.stream is not None and self.stream.closed is not True:
+            self.stream.close()
+
     def test_get_content(self):
         # stream = open("myfile.txt", "r", encoding="utf-8")
         # stream = io.StringIO("some initial text data")
         text = 'Some text date.'
-        stream = StringIO(text)
-        dic = DictionaryForText(stream)
+        self.stream = StringIO(text)
+        dic = DictionaryForText(self.stream)
         self.assertEqual(text, dic.text)
-        stream.close()
 
     def test_get_content_after_close_stream(self):
         text = 'Some text date.'
-        stream = StringIO(text)
-        dic = DictionaryForText(stream)
-        stream.close()
+        self.stream = StringIO(text)
+        dic = DictionaryForText(self.stream)
+        self.stream.close()
 
         self.assertEqual(text, dic.text)
 
     def test_prepare_simple(self):
-        text = 'text date \nand more text'
-        stream = StringIO(text)
-        dic = DictionaryForText(stream)
+        self.stream = StringIO('text date \nand more text')
+        dic = DictionaryForText(self.stream)
         self.assertEqual(
             {'text': 2, 'date': 1, 'and': 1, 'more': 1},
             dic.prepare()
         )
-        stream.close()
