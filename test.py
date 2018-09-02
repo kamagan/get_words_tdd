@@ -81,3 +81,12 @@ class Test(TestCase):
 
         self.assertEqual({'is': 1, 'a': 1}, dic.get_drop_short())
 
+    def test_drop_hyphen_and_apostrophe_at_start_or_end_word(self):
+        self.stream = StringIO(
+            'date some- \'text ’date text'
+        )
+        dic = DictionaryForText(self.stream)
+        words = dic.prepare()
+        self.assertEqual({'some': 1, 'text': 2, 'date':2}, words)
+
+

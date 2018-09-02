@@ -16,7 +16,7 @@ class DictionaryForText:
         return self.__drop['short']
 
     def prepare(self):
-        row = re.split('[^a-zA-Z\-\'’]+', self.text)
+        row = re.split('[\-\'’]*[^a-zA-Z\-\'’]+[\-\'’]*', self.text)
 
         words = {}
         for word in row:
