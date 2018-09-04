@@ -89,4 +89,28 @@ class Test(TestCase):
         words = dic.prepare()
         self.assertEqual({'some': 1, 'text': 2, 'date':2}, words)
 
+    def test_proper_name_checker(self):
+        self.assertTrue(DictionaryForText._proper_name_checker('Murzik'))
+        self.assertFalse(DictionaryForText._proper_name_checker('RDX'))
+        self.assertFalse(DictionaryForText._proper_name_checker('ClickEvent'))
+        self.assertFalse(DictionaryForText._proper_name_checker('clickEvent'))
+        self.assertFalse(DictionaryForText._proper_name_checker('mouse'))
+
+    def test_drop_proper_name(self):
+        keep, drop = DictionaryForText._drop_proper_name(
+            {'Two': 1, 'two': 2, 'cat': 3, 'Venik': 1}
+        )
+        self.assertEqual({'two': 3, 'cat': 3}, keep)
+        self.assertEqual({'Venik': 1}, drop)
+
+    def test_drop_proper_name(self):
+        self.stream = StringIO('Two cats are two tails, Murzik and Venik.')
+        dic = DictionaryForText(self.stream)
+        words = dic.prepare()
+        self.assertEqual(
+            {'two': 2, 'cats': 1, 'are': 1, 'tails': 1, 'and': 1},
+            words
+        )
+        self.assertEqual({'Murzik': 1, 'Venik': 1}, dic.get_drop_proper_name())
+
 
