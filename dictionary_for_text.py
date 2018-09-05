@@ -18,6 +18,9 @@ class DictionaryForText:
     def get_drop_proper_name(self):
         return self.__drop['proper_name']
 
+    def get_drop_end_s(self):
+        return self.__drop['end_s']
+
     def prepare(self):
         row = re.split('[\-\'’]*[^a-zA-Z\-\'’]+[\-\'’]*', self.text)
 
@@ -30,6 +33,7 @@ class DictionaryForText:
 
         words, self.__drop['short'] = self._drop_short_words(words)
         words, self.__drop['proper_name'] = self._drop_proper_name(words)
+        words, self.__drop['end_s'] = self._drop_end_s(words)
 
         return words
 
@@ -66,3 +70,22 @@ class DictionaryForText:
 
         return keep, drop
 
+    @staticmethod
+    def _end_s_checker(word):
+        return re.match('^.*[a-rt-z]{1}s$', word) is not None
+
+    @classmethod
+    def _drop_end_s(cls, words):
+        keep = {k: v for k, v in words.items() if not cls._end_s_checker(k)}
+        for_check = {k: v for k, v in words.items() if cls._end_s_checker(k)}
+        drop = {}
+
+        for word in for_check:
+            word_without_end_s = word[0:-1]
+            if word_without_end_s in keep:
+                keep[word_without_end_s] += words[word]
+                drop[word] = word_without_end_s
+            else:
+                keep[word] = words[word]
+
+        return keep, drop

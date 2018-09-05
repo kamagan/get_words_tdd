@@ -81,7 +81,7 @@ class Test(TestCase):
 
         self.assertEqual({'is': 1, 'a': 1}, dic.get_drop_short())
 
-    def test_drop_hyphen_and_apostrophe_at_start_or_end_word(self):
+    def test_prepare_drop_hyphen_and_apostrophe_at_start_or_end_word(self):
         self.stream = StringIO(
             'date some- \'text ’date text'
         )
@@ -103,7 +103,7 @@ class Test(TestCase):
         self.assertEqual({'two': 3, 'cat': 3}, keep)
         self.assertEqual({'Venik': 1}, drop)
 
-    def test_drop_proper_name(self):
+    def test_prepare_drop_proper_name(self):
         self.stream = StringIO('Two cats are two tails, Murzik and Venik.')
         dic = DictionaryForText(self.stream)
         words = dic.prepare()
@@ -112,5 +112,29 @@ class Test(TestCase):
             words
         )
         self.assertEqual({'Murzik': 1, 'Venik': 1}, dic.get_drop_proper_name())
+
+    def test_end_s_checker(self):
+        self.assertTrue(DictionaryForText._end_s_checker('items'))
+        self.assertTrue(DictionaryForText._end_s_checker('drives'))
+        self.assertFalse(DictionaryForText._end_s_checker('item'))
+        self.assertFalse(DictionaryForText._end_s_checker('class'))
+
+    def test_drop_end_s(self):
+        keep, drop = DictionaryForText._drop_end_s(
+            {'items': 2, 'item': 3, 'class': 4, 'drive': 5, 'drives': 6}
+        )
+        self.assertEqual({'item': 5, 'class': 4, 'drive': 11}, keep)
+        self.assertEqual({'items': 'item', 'drives': 'drive'}, drop)
+
+    def test_prepare_drop_end_s(self):
+        self.stream = StringIO('two cats are cat and cat')
+        dic = DictionaryForText(self.stream)
+        words = dic.prepare()
+        self.assertEqual(
+            {'two': 1, 'cat': 3, 'are': 1, 'and': 1},
+            words
+        )
+        self.assertEqual({'cats': 'cat'}, dic.get_drop_end_s())
+
 
 
