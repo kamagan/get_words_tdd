@@ -80,19 +80,7 @@ class DictionaryForText:
 
     @classmethod
     def _drop_end_s(cls, words):
-        keep = {k: v for k, v in words.items() if not cls._end_s_checker(k)}
-        for_check = {k: v for k, v in words.items() if cls._end_s_checker(k)}
-        drop = {}
-
-        for word in for_check:
-            word_without_end_s = word[0:-1]
-            if word_without_end_s in keep:
-                keep[word_without_end_s] += words[word]
-                drop[word] = word_without_end_s
-            else:
-                keep[word] = words[word]
-
-        return keep, drop
+        return cls._drop_ends(words, cls._end_s_checker, slice(0, -1))
 
     @staticmethod
     def _end_apostrophe_s_checker(word):
@@ -100,15 +88,23 @@ class DictionaryForText:
 
     @classmethod
     def _drop_end_apostrophe_s(cls, words):
-        keep = {k: v for k, v in words.items() if not cls._end_apostrophe_s_checker(k)}
-        for_check = {k: v for k, v in words.items() if cls._end_apostrophe_s_checker(k)}
+        return cls._drop_ends(
+            words,
+            cls._end_apostrophe_s_checker,
+            slice(0, -2)
+        )
+
+    @staticmethod
+    def _drop_ends(words, checker, excision):
+        keep = {k: v for k, v in words.items() if not checker(k)}
+        for_check = {k: v for k, v in words.items() if checker(k)}
         drop = {}
 
         for word in for_check:
-            word_without_end_apostrophe_s = word[0:-2]
-            if word_without_end_apostrophe_s in keep:
-                keep[word_without_end_apostrophe_s] += words[word]
-                drop[word] = word_without_end_apostrophe_s
+            word_without_end = word[excision]
+            if word_without_end in keep:
+                keep[word_without_end] += words[word]
+                drop[word] = word_without_end
             else:
                 keep[word] = words[word]
 
