@@ -136,5 +136,24 @@ class Test(TestCase):
         )
         self.assertEqual({'cats': 'cat'}, dic.get_drop_end_s())
 
+    def test_end_apostrophe_s_checker(self):
+        self.assertTrue(DictionaryForText._end_apostrophe_s_checker('item\'s'))
+        self.assertTrue(DictionaryForText._end_apostrophe_s_checker('item’s'))
+        self.assertFalse(DictionaryForText._end_apostrophe_s_checker('items'))
 
+    def test_drop_end_apostrophe_s(self):
+        keep, drop = DictionaryForText._drop_end_apostrophe_s(
+            {'item\'s': 2, 'item': 3, 'class': 4, 'item’s': 5}
+        )
+        self.assertEqual({'item': 10, 'class': 4}, keep)
+        self.assertEqual({'item\'s': 'item', 'item’s': 'item'}, drop)
 
+    def test_prepare_drop_end_apostrophe_s(self):
+        self.stream = StringIO('that cat and this cat are cat\'s cats')
+        dic = DictionaryForText(self.stream)
+        words = dic.prepare()
+        self.assertEqual(
+            {'that': 1, 'cat': 4, 'and': 1, 'this': 1, 'are': 1},
+            words
+        )
+        self.assertEqual({'cat\'s': 'cat'}, dic.get_drop_end_apostrophe_s())

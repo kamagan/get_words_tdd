@@ -21,6 +21,9 @@ class DictionaryForText:
     def get_drop_end_s(self):
         return self.__drop['end_s']
 
+    def get_drop_end_apostrophe_s(self):
+        return self.__drop['end_apostrophe_s']
+
     def prepare(self):
         row = re.split('[\-\'’]*[^a-zA-Z\-\'’]+[\-\'’]*', self.text)
 
@@ -34,6 +37,7 @@ class DictionaryForText:
         words, self.__drop['short'] = self._drop_short_words(words)
         words, self.__drop['proper_name'] = self._drop_proper_name(words)
         words, self.__drop['end_s'] = self._drop_end_s(words)
+        words, self.__drop['end_apostrophe_s'] = self._drop_end_apostrophe_s(words)
 
         return words
 
@@ -85,6 +89,26 @@ class DictionaryForText:
             if word_without_end_s in keep:
                 keep[word_without_end_s] += words[word]
                 drop[word] = word_without_end_s
+            else:
+                keep[word] = words[word]
+
+        return keep, drop
+
+    @staticmethod
+    def _end_apostrophe_s_checker(word):
+        return word[-2:] in ['\'s', '’s']
+
+    @classmethod
+    def _drop_end_apostrophe_s(cls, words):
+        keep = {k: v for k, v in words.items() if not cls._end_apostrophe_s_checker(k)}
+        for_check = {k: v for k, v in words.items() if cls._end_apostrophe_s_checker(k)}
+        drop = {}
+
+        for word in for_check:
+            word_without_end_apostrophe_s = word[0:-2]
+            if word_without_end_apostrophe_s in keep:
+                keep[word_without_end_apostrophe_s] += words[word]
+                drop[word] = word_without_end_apostrophe_s
             else:
                 keep[word] = words[word]
 
