@@ -157,3 +157,27 @@ class Test(TestCase):
             words
         )
         self.assertEqual({'cat\'s': 'cat'}, dic.get_drop_end_apostrophe_s())
+
+    def test_end_ies_checker(self):
+        self.assertTrue(DictionaryForText._end_ies_checker('entities'))
+        self.assertFalse(DictionaryForText._end_ies_checker('items'))
+
+
+    def test_drop_end_ies(self):
+        keep, drop = DictionaryForText._drop_end_ies(
+            {'entity': 2, 'entities': 3, 'class': 4}
+        )
+        self.assertEqual({'entity': 5, 'class': 4}, keep)
+        self.assertEqual({'entities': 'entity'}, drop)
+
+    def test_prepare_drop_end_ies(self):
+        self.stream = StringIO(
+            'those goodies are one goody for you and one one for you'
+        )
+        dic = DictionaryForText(self.stream)
+        words = dic.prepare()
+        self.assertEqual(
+            {'those': 1, 'are': 1, 'one': 3, 'goody': 2, 'for': 2, 'you': 2, 'and': 1},
+            words
+        )
+        self.assertEqual({'goodies': 'goody'}, dic.get_drop_end_ies())

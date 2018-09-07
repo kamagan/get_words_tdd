@@ -24,6 +24,9 @@ class DictionaryForText:
     def get_drop_end_apostrophe_s(self):
         return self.__drop['end_apostrophe_s']
 
+    def get_drop_end_ies(self):
+        return self.__drop['end_ies']
+
     def prepare(self):
         row = re.split('[\-\'’]*[^a-zA-Z\-\'’]+[\-\'’]*', self.text)
 
@@ -38,6 +41,7 @@ class DictionaryForText:
         words, self.__drop['proper_name'] = self._drop_proper_name(words)
         words, self.__drop['end_s'] = self._drop_end_s(words)
         words, self.__drop['end_apostrophe_s'] = self._drop_end_apostrophe_s(words)
+        words, self.__drop['end_ies'] = self._drop_end_ies(words)
 
         return words
 
@@ -95,16 +99,24 @@ class DictionaryForText:
         )
 
     @staticmethod
-    def _drop_ends(words, checker, excision):
+    def _end_ies_checker(word):
+        return word[-3:] == 'ies'
+
+    @classmethod
+    def _drop_end_ies(cls, words):
+        return cls._drop_ends(words, cls._end_ies_checker, slice(0, -3), 'y')
+
+    @staticmethod
+    def _drop_ends(words, checker, excision, substitute=''):
         keep = {k: v for k, v in words.items() if not checker(k)}
         for_check = {k: v for k, v in words.items() if checker(k)}
         drop = {}
 
         for word in for_check:
-            word_without_end = word[excision]
-            if word_without_end in keep:
-                keep[word_without_end] += words[word]
-                drop[word] = word_without_end
+            word_finding = word[excision] + substitute
+            if word_finding in keep:
+                keep[word_finding] += words[word]
+                drop[word] = word_finding
             else:
                 keep[word] = words[word]
 
