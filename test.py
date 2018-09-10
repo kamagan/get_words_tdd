@@ -162,7 +162,6 @@ class Test(TestCase):
         self.assertTrue(DictionaryForText._end_ies_checker('entities'))
         self.assertFalse(DictionaryForText._end_ies_checker('items'))
 
-
     def test_drop_end_ies(self):
         keep, drop = DictionaryForText._drop_end_ies(
             {'entity': 2, 'entities': 3, 'class': 4}
@@ -181,3 +180,27 @@ class Test(TestCase):
             words
         )
         self.assertEqual({'goodies': 'goody'}, dic.get_drop_end_ies())
+
+    def test_end_es_checker(self):
+        self.assertTrue(DictionaryForText._end_es_checker('classes'))
+        self.assertTrue(DictionaryForText._end_es_checker('does'))
+        self.assertFalse(DictionaryForText._end_es_checker('items'))
+
+    def test_drop_end_es(self):
+        keep, drop = DictionaryForText._drop_end_es(
+            {'drive': 2, 'drives': 3, 'class': 4, 'classes': 5}
+        )
+        self.assertEqual({'drive': 2, 'drives': 3, 'class': 9}, keep)
+        self.assertEqual({'classes': 'class'}, drop)
+
+    def test_prepare_drop_end_es(self):
+        self.stream = StringIO(
+            'classes are object of class class'
+        )
+        dic = DictionaryForText(self.stream)
+        words = dic.prepare()
+        self.assertEqual(
+            {'are': 1, 'object': 1, 'class': 3},
+            words
+        )
+        self.assertEqual({'classes': 'class'}, dic.get_drop_end_es())

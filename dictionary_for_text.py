@@ -27,6 +27,9 @@ class DictionaryForText:
     def get_drop_end_ies(self):
         return self.__drop['end_ies']
 
+    def get_drop_end_es(self):
+        return self.__drop['end_es']
+
     def prepare(self):
         row = re.split('[\-\'’]*[^a-zA-Z\-\'’]+[\-\'’]*', self.text)
 
@@ -42,6 +45,7 @@ class DictionaryForText:
         words, self.__drop['end_s'] = self._drop_end_s(words)
         words, self.__drop['end_apostrophe_s'] = self._drop_end_apostrophe_s(words)
         words, self.__drop['end_ies'] = self._drop_end_ies(words)
+        words, self.__drop['end_es'] = self._drop_end_es(words)
 
         return words
 
@@ -105,6 +109,14 @@ class DictionaryForText:
     @classmethod
     def _drop_end_ies(cls, words):
         return cls._drop_ends(words, cls._end_ies_checker, slice(0, -3), 'y')
+
+    @staticmethod
+    def _end_es_checker(word):
+        return word[-2:] == 'es'
+
+    @classmethod
+    def _drop_end_es(cls, words):
+        return cls._drop_ends(words, cls._end_es_checker, slice(0, -2))
 
     @staticmethod
     def _drop_ends(words, checker, excision, substitute=''):
