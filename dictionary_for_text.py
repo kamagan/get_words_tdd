@@ -40,6 +40,8 @@ class DictionaryForText:
             else:
                 words[word] = 1
 
+        words = self._prepare_camel_case_words(words)
+
         words, self.__drop['short'] = self._drop_short_words(words)
         words, self.__drop['proper_name'] = self._drop_proper_name(words)
         words, self.__drop['end_s'] = self._drop_end_s(words)
@@ -133,3 +135,40 @@ class DictionaryForText:
                 keep[word] = words[word]
 
         return keep, drop
+
+    @staticmethod
+    # заглавная не только в начале, есть сторочные символы
+    def _camel_case_checker(word):
+        return (
+            re.match('^.+[A-Z]+.+$', word) is not None
+            and
+            re.match('^.*[a-z]+.*$', word) is not None
+        )
+
+    @staticmethod
+    def _cut_camel_case_word(word):
+        # режем по загловной букве, если после неё идёт строчная
+        separated = re.sub('(?<=[a-zA-Z])([A-Z][a-z]+)', r' \1', word);
+
+        # или по первой заглавной, если после неё идут только заглавные
+        separated = re.sub('([a-z]+)([A-Z]{2,})', r'\1 \2', separated);
+
+        return separated.split()
+
+    @classmethod
+    def _prepare_camel_case_words(cls, words):
+        keep = {k: v for k, v in words.items() if not cls._camel_case_checker(k)}
+        for_cut = {k: v for k, v in words.items() if cls._camel_case_checker(k)}
+
+        for word in for_cut:
+            parts = cls._cut_camel_case_word(word)
+            count = words[word]
+
+            for part in parts:
+                if part in keep:
+                    keep[part] += count
+                else:
+                    keep[part] = count
+
+        return keep
+

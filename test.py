@@ -204,3 +204,46 @@ class Test(TestCase):
             words
         )
         self.assertEqual({'classes': 'class'}, dic.get_drop_end_es())
+
+    def test_camel_case(self):
+        checker = DictionaryForText._camel_case_checker
+
+        self.assertTrue(checker('BreakEvent'))
+        self.assertTrue(checker('BlockBreakMessage'))
+        self.assertTrue(checker('IDBlock'))
+        self.assertTrue(checker('IdBlock'))
+        self.assertTrue(checker('idBlock'))
+        self.assertTrue(checker('BlockID'))
+        self.assertTrue(checker('blockID'))
+        self.assertTrue(checker('blockId'))
+        self.assertTrue(checker('eventTNTExplosion'))
+
+        self.assertFalse(checker('items'))
+        self.assertFalse(checker('Items'))
+        self.assertFalse(checker('ItemS'))
+        self.assertFalse(checker('itemS'))
+        self.assertFalse(checker('ITEMS'))
+
+    def test_cut_camel_case_word(self):
+        cuter = DictionaryForText._cut_camel_case_word
+
+        self.assertEqual(['Break', 'Event'], cuter('BreakEvent'))
+        self.assertEqual(['Block', 'Break', 'Message'], cuter('BlockBreakMessage'))
+
+        self.assertEqual(['ID', 'Block'], cuter('IDBlock'))
+        self.assertEqual(['Id', 'Block'], cuter('IdBlock'))
+        self.assertEqual(['id', 'Block'], cuter('idBlock'))
+        self.assertEqual(['Block', 'ID'], cuter('BlockID'))
+        self.assertEqual(['block', 'ID'], cuter('blockID'))
+        self.assertEqual(['block', 'Id'], cuter('blockId'))
+
+        self.assertEqual(['event', 'TNT', 'Explosion'], cuter('eventTNTExplosion'))
+
+    def test_prepare_camel_case_words(self):
+        words = DictionaryForText._prepare_camel_case_words(
+            {'BlockBreakEvent': 1, 'Event': 1, 'when': 1, 'Block': 1, 'Break': 1}
+        )
+        self.assertEqual(
+            {'Block': 2, 'Break': 2, 'Event': 2, 'when': 1},
+            words
+        )
