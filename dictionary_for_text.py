@@ -30,6 +30,9 @@ class DictionaryForText:
     def get_drop_end_es(self):
         return self.__drop['end_es']
 
+    def get_drop_uppercase(self):
+        return self.__drop['uppercase']
+
     def prepare(self):
         row = re.split('[\-\'’]*[^a-zA-Z\-\'’]+[\-\'’]*', self.text)
 
@@ -42,6 +45,9 @@ class DictionaryForText:
 
         words, self.__drop['short'] = self._drop_short_words(words)
         words, self.__drop['proper_name'] = self._drop_proper_name(words)
+
+        words, self.__drop['uppercase'] = self._drop_upper_case(words)
+
         words, self.__drop['end_s'] = self._drop_end_s(words)
         words, self.__drop['end_apostrophe_s'] = self._drop_end_apostrophe_s(words)
         words, self.__drop['end_ies'] = self._drop_end_ies(words)
@@ -117,6 +123,27 @@ class DictionaryForText:
     @classmethod
     def _drop_end_es(cls, words):
         return cls._drop_ends(words, cls._end_es_checker, slice(0, -2))
+
+    @staticmethod
+    def _check_has_uppercase(word):
+        return re.match('^.*[A-Z]+.*$', word) is not None
+
+    @classmethod
+    def _drop_upper_case(cls, words):
+        keep = {k: v for k, v in words.items() if not cls._check_has_uppercase(k)}
+        for_check = {k: v for k, v in words.items() if cls._check_has_uppercase(k)}
+        drop = {}
+
+        for word in for_check:
+            word_finding = word.lower()
+            if word_finding in keep:
+                keep[word_finding] += words[word]
+                drop[word] = word_finding
+            else:
+                keep[word] = words[word]
+
+        return keep, drop
+
 
     @staticmethod
     def _drop_ends(words, checker, excision, substitute=''):
