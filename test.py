@@ -247,3 +247,17 @@ class Test(TestCase):
             {'Block': 2, 'Break': 2, 'Event': 2, 'when': 1},
             words
         )
+
+    def test_has_uppercase(self):
+        self.assertTrue(DictionaryForText._check_has_uppercase('CAT'))
+        self.assertTrue(DictionaryForText._check_has_uppercase('Cat'))
+        self.assertTrue(DictionaryForText._check_has_uppercase('cAt'))
+        self.assertTrue(DictionaryForText._check_has_uppercase('caT'))
+        self.assertFalse(DictionaryForText._check_has_uppercase('cat'))
+
+    def test_drop_uppercase(self):
+        keep, drop = DictionaryForText._drop_upper_case(
+            {'cat': 2, 'Cat': 3, 'item': 4}
+        )
+        self.assertEqual({'cat': 5, 'item': 4}, keep)
+        self.assertEqual({'Cat': 'cat'}, drop)
