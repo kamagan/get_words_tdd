@@ -96,7 +96,7 @@ class DictionaryForText:
 
     @staticmethod
     def _end_s_checker(word):
-        return re.match('^.*[a-rt-z]{1}s$', word) is not None
+        return word[-1:] == 's' and word[-2:-1] != 's'
 
     @classmethod
     def _drop_end_s(cls, words):
