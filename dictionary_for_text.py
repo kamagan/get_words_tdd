@@ -30,6 +30,9 @@ class DictionaryForText:
     def get_drop_end_es(self):
         return self.__drop['end_es']
 
+    def get_drop_end_ed(self):
+        return self.__drop['end_ed']
+
     def get_drop_uppercase(self):
         return self.__drop['uppercase']
 
@@ -48,10 +51,11 @@ class DictionaryForText:
 
         words, self.__drop['uppercase'] = self._drop_upper_case(words)
 
-        words, self.__drop['end_s'] = self._drop_end_s(words)
         words, self.__drop['end_apostrophe_s'] = self._drop_end_apostrophe_s(words)
+        words, self.__drop['end_s'] = self._drop_end_s(words)
         words, self.__drop['end_ies'] = self._drop_end_ies(words)
         words, self.__drop['end_es'] = self._drop_end_es(words)
+        words, self.__drop['end_ed'] = self._drop_end_ed(words)
 
         return words
 
@@ -125,6 +129,14 @@ class DictionaryForText:
         return cls._drop_ends(words, cls._end_es_checker, slice(0, -2))
 
     @staticmethod
+    def _end_ed_checker(word):
+        return word[-2:] == 'ed'
+
+    @classmethod
+    def _drop_end_ed(cls, words):
+        return cls._drop_ends(words, cls._end_ed_checker, slice(0, -2), ('e', ''))
+
+    @staticmethod
     def _check_has_uppercase(word):
         return re.match('^.*[A-Z]+.*$', word) is not None
 
@@ -151,12 +163,20 @@ class DictionaryForText:
         for_check = {k: v for k, v in words.items() if checker(k)}
         drop = {}
 
+        if not isinstance(substitute, tuple):
+            substitute = (substitute,)
+
         for word in for_check:
-            word_finding = word[excision] + substitute
-            if word_finding in keep:
-                keep[word_finding] += words[word]
-                drop[word] = word_finding
-            else:
+            word_is_dropped = False
+            for add_to_end in substitute:
+                word_finding = word[excision] + add_to_end
+                if word_finding in keep:
+                    keep[word_finding] += words[word]
+                    drop[word] = word_finding
+                    word_is_dropped = True
+                    break
+
+            if not word_is_dropped:
                 keep[word] = words[word]
 
         return keep, drop

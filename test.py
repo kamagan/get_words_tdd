@@ -219,4 +219,29 @@ class Test(TestCase):
         self.assertEqual({'cat': 5, 'item': 4}, keep)
         self.assertEqual({'Cat': 'cat'}, drop)
 
+    def test_has_end_ed(self):
+        self.assertTrue(DictionaryForText._end_ed_checker('called'))
+        self.assertTrue(DictionaryForText._end_ed_checker('created'))
 
+        self.assertFalse(DictionaryForText._end_ed_checker('call'))
+        self.assertFalse(DictionaryForText._end_ed_checker('create'))
+        self.assertFalse(DictionaryForText._end_ed_checker('cat'))
+
+    def test_drop_end_ed(self):
+        keep, drop = DictionaryForText._drop_end_ed(
+            {'called': 2, 'call': 3, 'word': 1, 'create': 4, 'created': 5}
+        )
+        self.assertEqual({'call': 5, 'word': 1, 'create': 9}, keep)
+        self.assertEqual({'called': 'call', 'created': 'create'}, drop)
+
+    def test_prepare_drop_end_ed(self):
+        self.stream = StringIO(
+            'the call called. create it. it will be created.'
+        )
+        dic = DictionaryForText(self.stream)
+        words = dic.prepare()
+        self.assertEqual(2, words['call'])
+        self.assertEqual(2, words['create'])
+        self.assertFalse('called' in words)
+        self.assertFalse('created' in words)
+        self.assertEqual({'called': 'call', 'created': 'create'}, dic.get_drop_end_ed())
