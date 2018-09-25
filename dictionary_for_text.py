@@ -71,8 +71,7 @@ class DictionaryForText:
 
     @classmethod
     def _drop_short_words(cls, words):
-        keep = {k: v for k, v in words.items() if not cls._short_checker(k)}
-        drop = {k: v for k, v in words.items() if cls._short_checker(k)}
+        drop, keep = cls._separate_by_checker(words, cls._short_checker)
         return keep, drop
 
     @staticmethod
@@ -81,8 +80,7 @@ class DictionaryForText:
 
     @classmethod
     def _drop_proper_name(cls, words):
-        keep = {k: v for k, v in words.items() if not cls._proper_name_checker(k)}
-        for_check = {k: v for k, v in words.items() if cls._proper_name_checker(k)}
+        for_check, keep = cls._separate_by_checker(words, cls._proper_name_checker)
         drop = {}
 
         for word in for_check:
@@ -144,8 +142,7 @@ class DictionaryForText:
 
     @classmethod
     def _drop_upper_case(cls, words):
-        keep = {k: v for k, v in words.items() if not cls._check_has_uppercase(k)}
-        for_check = {k: v for k, v in words.items() if cls._check_has_uppercase(k)}
+        for_check, keep = cls._separate_by_checker(words, cls._check_has_uppercase)
         drop = {}
 
         for word in for_check:
@@ -159,14 +156,13 @@ class DictionaryForText:
         return keep, drop
 
 
-    @staticmethod
-    def _drop_ends(words, checker, excision, substitute=''):
-        keep = {k: v for k, v in words.items() if not checker(k)}
-        for_check = {k: v for k, v in words.items() if checker(k)}
-        drop = {}
-
+    @classmethod
+    def _drop_ends(cls, words, checker, excision, substitute=''):
         if not isinstance(substitute, tuple):
             substitute = (substitute,)
+
+        for_check, keep = cls._separate_by_checker(words, checker)
+        drop = {}
 
         for word in for_check:
             word_is_dropped = False
@@ -204,8 +200,7 @@ class DictionaryForText:
 
     @classmethod
     def _prepare_camel_case_words(cls, words):
-        keep = {k: v for k, v in words.items() if not cls._camel_case_checker(k)}
-        for_cut = {k: v for k, v in words.items() if cls._camel_case_checker(k)}
+        for_cut, keep = cls._separate_by_checker(words, cls._camel_case_checker)
 
         for word in for_cut:
             parts = cls._cut_camel_case_word(word)
@@ -218,4 +213,10 @@ class DictionaryForText:
                     keep[part] = count
 
         return keep
+
+    @staticmethod
+    def _separate_by_checker(words, checker):
+        match = {k: v for k, v in words.items() if checker(k)}
+        not_match = {k: v for k, v in words.items() if not checker(k)}
+        return match, not_match
 
