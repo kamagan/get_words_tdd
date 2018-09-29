@@ -1,7 +1,6 @@
+
 from unittest import TestCase
-
 from dictionary_for_text import DictionaryForText
-
 from io import StringIO
 
 
@@ -39,9 +38,10 @@ class Test(TestCase):
         )
 
     def test_prepare_text_with_punctuation_marks_and_other_symbols(self):
-        self.stream = StringIO(
-            'text, «date». and? {more}! [text]: "text"; text…; (text) “text” — text 2date'
-        )
+        self.stream = StringIO('''
+            text, «date». and? {more}! [text]: "text"; text…; (text)
+            “text” — text 2date
+        ''')
         dic = DictionaryForText(self.stream)
         self.assertEqual(
             {'text': 7, 'date': 2, 'and': 1, 'more': 1},
@@ -120,11 +120,13 @@ class Test(TestCase):
         self.assertFalse(DictionaryForText._end_s_checker('class'))
 
     def test_drop_end_s(self):
-        keep, drop = DictionaryForText._drop_end_s(
-            {'items': 2, 'item': 3, 'class': 4, 'drive': 5, 'drives': 6}
+        end_key = 'end_s'
+        keep, drop = DictionaryForText._drop_ends(
+            {'items': 2, 'item': 3, 'class': 4, 'drive': 5, 'drives': 6},
+            end_key
         )
         self.assertEqual({'item': 5, 'class': 4, 'drive': 11}, keep)
-        self.assertEqual({'items': 'item', 'drives': 'drive'}, drop)
+        self.assertEqual({'items': 'item', 'drives': 'drive'}, drop[end_key])
 
     def test_prepare_drop_end_s(self):
         self.stream = StringIO('two cats are cat and cat')
@@ -142,11 +144,12 @@ class Test(TestCase):
         self.assertFalse(DictionaryForText._end_apostrophe_s_checker('items'))
 
     def test_drop_end_apostrophe_s(self):
-        keep, drop = DictionaryForText._drop_end_apostrophe_s(
-            {'item\'s': 2, 'item': 3, 'class': 4, 'item’s': 5}
+        end_key = 'end_apostrophe_s'
+        keep, drop = DictionaryForText._drop_ends(
+            {'item\'s': 2, 'item': 3, 'class': 4, 'item’s': 5}, end_key
         )
         self.assertEqual({'item': 10, 'class': 4}, keep)
-        self.assertEqual({'item\'s': 'item', 'item’s': 'item'}, drop)
+        self.assertEqual({'item\'s': 'item', 'item’s': 'item'}, drop[end_key])
 
     def test_prepare_drop_end_apostrophe_s(self):
         self.stream = StringIO('that cat and this cat are cat\'s cats')
@@ -163,11 +166,12 @@ class Test(TestCase):
         self.assertFalse(DictionaryForText._end_ies_checker('items'))
 
     def test_drop_end_ies(self):
-        keep, drop = DictionaryForText._drop_end_ies(
-            {'entity': 2, 'entities': 3, 'class': 4}
+        end_key = 'end_ies'
+        keep, drop = DictionaryForText._drop_ends(
+            {'entity': 2, 'entities': 3, 'class': 4}, end_key
         )
         self.assertEqual({'entity': 5, 'class': 4}, keep)
-        self.assertEqual({'entities': 'entity'}, drop)
+        self.assertEqual({'entities': 'entity'}, drop[end_key])
 
     def test_prepare_drop_end_ies(self):
         self.stream = StringIO(
@@ -176,7 +180,10 @@ class Test(TestCase):
         dic = DictionaryForText(self.stream)
         words = dic.prepare()
         self.assertEqual(
-            {'those': 1, 'are': 1, 'one': 3, 'goody': 2, 'for': 2, 'you': 2, 'and': 1},
+            {
+                'those': 1, 'are': 1, 'one': 3, 'goody': 2, 'for': 2,
+                'you': 2, 'and': 1
+            },
             words
         )
         self.assertEqual({'goodies': 'goody'}, dic.get_drop_end_ies())
@@ -187,11 +194,12 @@ class Test(TestCase):
         self.assertFalse(DictionaryForText._end_es_checker('items'))
 
     def test_drop_end_es(self):
-        keep, drop = DictionaryForText._drop_end_es(
-            {'drive': 2, 'drives': 3, 'class': 4, 'classes': 5}
+        end_key = 'end_es'
+        keep, drop = DictionaryForText._drop_ends(
+            {'drive': 2, 'drives': 3, 'class': 4, 'classes': 5}, end_key
         )
         self.assertEqual({'drive': 2, 'drives': 3, 'class': 9}, keep)
-        self.assertEqual({'classes': 'class'}, drop)
+        self.assertEqual({'classes': 'class'}, drop[end_key])
 
     def test_prepare_drop_end_es(self):
         self.stream = StringIO(
@@ -228,7 +236,9 @@ class Test(TestCase):
         cuter = DictionaryForText._cut_camel_case_word
 
         self.assertEqual(['Break', 'Event'], cuter('BreakEvent'))
-        self.assertEqual(['Block', 'Break', 'Message'], cuter('BlockBreakMessage'))
+        self.assertEqual(
+            ['Block', 'Break', 'Message'], cuter('BlockBreakMessage')
+        )
 
         self.assertEqual(['ID', 'Block'], cuter('IDBlock'))
         self.assertEqual(['Id', 'Block'], cuter('IdBlock'))
@@ -237,15 +247,19 @@ class Test(TestCase):
         self.assertEqual(['block', 'ID'], cuter('blockID'))
         self.assertEqual(['block', 'Id'], cuter('blockId'))
 
-        self.assertEqual(['event', 'TNT', 'Explosion'], cuter('eventTNTExplosion'))
+        self.assertEqual(
+            ['event', 'TNT', 'Explosion'], cuter('eventTNTExplosion')
+        )
 
     def test_prepare_camel_case_words(self):
         words = DictionaryForText._prepare_camel_case_words(
-            {'BlockBreakEvent': 1, 'Event': 1, 'when': 1, 'Block': 1, 'Break': 1}
+            {
+                'BlockBreakEvent': 1, 'Event': 1, 'when': 1,
+                'Block': 1, 'Break': 1
+            }
         )
         self.assertEqual(
-            {'Block': 2, 'Break': 2, 'Event': 2, 'when': 1},
-            words
+            {'Block': 2, 'Break': 2, 'Event': 2, 'when': 1}, words
         )
 
     def test_has_uppercase(self):
@@ -271,11 +285,15 @@ class Test(TestCase):
         self.assertFalse(DictionaryForText._end_ed_checker('cat'))
 
     def test_drop_end_ed(self):
-        keep, drop = DictionaryForText._drop_end_ed(
-            {'called': 2, 'call': 3, 'word': 1, 'create': 4, 'created': 5}
+        end_key = 'end_ed'
+        keep, drop = DictionaryForText._drop_ends(
+            {'called': 2, 'call': 3, 'word': 1, 'create': 4, 'created': 5},
+            end_key
         )
         self.assertEqual({'call': 5, 'word': 1, 'create': 9}, keep)
-        self.assertEqual({'called': 'call', 'created': 'create'}, drop)
+        self.assertEqual(
+            {'called': 'call', 'created': 'create'}, drop[end_key]
+        )
 
     def test_prepare_drop_end_ed(self):
         self.stream = StringIO(
@@ -287,4 +305,6 @@ class Test(TestCase):
         self.assertEqual(2, words['create'])
         self.assertFalse('called' in words)
         self.assertFalse('created' in words)
-        self.assertEqual({'called': 'call', 'created': 'create'}, dic.get_drop_end_ed())
+        self.assertEqual(
+            {'called': 'call', 'created': 'create'}, dic.get_drop_end_ed()
+        )
