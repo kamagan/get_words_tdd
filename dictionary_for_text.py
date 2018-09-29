@@ -146,16 +146,19 @@ class DictionaryForText:
             },
             'end_es': {
                 'checker': cls._end_es_checker,
-                'excision': slice(0, -2)
+                'excision': slice(0, -2),
+                'exception': ('bees', )
             },
             'end_s': {
                 'checker': cls._end_s_checker,
-                'excision': slice(0, -1)
+                'excision': slice(0, -1),
+                'exception': ('goods', 'https')
             },
             'end_ed': {
                 'checker': cls._end_ed_checker,
                 'excision': slice(0, -2),
-                'substitute': ('e', '')
+                'substitute': ('e', ''),
+                'exception': ('seed', 'speed')
             }
         }
 
@@ -170,19 +173,24 @@ class DictionaryForText:
             checker = end['checker']
             excision = end['excision']
             substitute = end['substitute'] if 'substitute' in end else ('', )
+            exception = end['exception'] if 'exception' in end else ('', )
 
             words, drop[end_key] = cls._drop_end(
-                words, checker, excision, substitute
+                words, checker, excision, substitute, exception
             )
 
         return words, drop
 
     @classmethod
-    def _drop_end(cls, words, checker, excision, substitute):
+    def _drop_end(cls, words, checker, excision, substitute, exception):
         for_check, keep = cls._separate_by_checker(words, checker)
         drop = {}
 
         for word in for_check:
+            if word in exception:
+                keep[word] = words[word]
+                continue
+
             word_is_dropped = False
             for add_to_end in substitute:
                 word_finding = word[excision] + add_to_end

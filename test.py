@@ -308,3 +308,22 @@ class Test(TestCase):
         self.assertEqual(
             {'called': 'call', 'created': 'create'}, dic.get_drop_end_ed()
         )
+
+    def test_exceptions(self):
+        keep, drop = DictionaryForText._drop_ends(
+            {
+                'seed': 2, 'see': 3, 'seeds': 1, 'spe': 4, 'speed': 5,
+                'bee': 2, 'bees': 3, 'be': 4, 'goods': 2, 'good': 3,
+                'http': 2, 'https': 3
+            },
+            ('end_ed', 'end_s', 'end_es')
+        )
+        self.assertEqual(
+            {
+                'seed': 3, 'see': 3, 'spe': 4, 'speed': 5, 'bee': 5, 'be': 4,
+                'goods': 2, 'good': 3, 'http': 2, 'https': 3
+            },
+            keep
+        )
+        self.assertEqual({'seeds': 'seed', 'bees': 'bee'}, drop['end_s'])
+        self.assertEqual({}, drop['end_ed'])
