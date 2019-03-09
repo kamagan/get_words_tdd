@@ -33,6 +33,9 @@ class DictionaryForText:
     def get_drop_end_ed(self):
         return self.__drop['end_ed']
 
+    def get_drop_end_ing(self):
+        return self.__drop['end_ing']
+
     def get_drop_uppercase(self):
         return self.__drop['uppercase']
 
@@ -109,8 +112,21 @@ class DictionaryForText:
         return word[-2:] == 'ed'
 
     @staticmethod
+    def _end_ing_checker(word):
+        return word[-3:] == 'ing'
+
+    @staticmethod
     def _check_has_uppercase(word):
         return re.match('^.*[A-Z]+.*$', word) is not None
+
+    @staticmethod
+    def _droper_last_repeated_letter(word):
+        double_last_letters = (
+            len(word) > 1
+            and
+            word[-1] == word[-2]
+        )
+        return slice(0, -1) if (double_last_letters) else slice(0, len(word))
 
     @classmethod
     def _drop_upper_case(cls, words):
@@ -159,6 +175,13 @@ class DictionaryForText:
                 'excision': slice(0, -2),
                 'substitute': ('e', ''),
                 'exception': ('seed', 'speed')
+            },
+            'end_ing': {
+                'checker': cls._end_ing_checker,
+                'excision': slice(0, -3),
+                'excision_add': cls._droper_last_repeated_letter,
+                'substitute': ('e', ''),
+                'exception': ('thing', 'during')
             }
         }
 
@@ -172,17 +195,20 @@ class DictionaryForText:
             end = actual_ends[end_key]
             checker = end['checker']
             excision = end['excision']
+            excision_add = end['excision_add'] if 'excision_add' in end else None
             substitute = end['substitute'] if 'substitute' in end else ('', )
             exception = end['exception'] if 'exception' in end else ('', )
 
             words, drop[end_key] = cls._drop_end(
-                words, checker, excision, substitute, exception
+                words, checker, excision, excision_add, substitute, exception
             )
 
         return words, drop
 
     @classmethod
-    def _drop_end(cls, words, checker, excision, substitute, exception):
+    def _drop_end(
+        cls, words, checker, excision, excision_add, substitute, exception
+    ):
         for_check, keep = cls._separate_by_checker(words, checker)
         drop = {}
 
@@ -192,8 +218,12 @@ class DictionaryForText:
                 continue
 
             word_is_dropped = False
-            for add_to_end in substitute:
-                word_finding = word[excision] + add_to_end
+            excised = word[excision]
+            words_for_find = [excised + end for end in substitute]
+            if excision_add is not None:
+                words_for_find.append(excised[excision_add(excised)])
+
+            for word_finding in words_for_find:
                 if word_finding in keep:
                     keep[word_finding] += words[word]
                     drop[word] = word_finding
@@ -205,8 +235,8 @@ class DictionaryForText:
 
         return keep, drop
 
-    @staticmethod
     # заглавная не только в начале, есть сторочные символы
+    @staticmethod
     def _camel_case_checker(word):
         return (
             re.match('^.+[A-Z]+.+$', word) is not None

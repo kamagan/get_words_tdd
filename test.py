@@ -87,7 +87,7 @@ class Test(TestCase):
         )
         dic = DictionaryForText(self.stream)
         words = dic.prepare()
-        self.assertEqual({'some': 1, 'text': 2, 'date':2}, words)
+        self.assertEqual({'some': 1, 'text': 2, 'date': 2}, words)
 
     def test_proper_name_checker(self):
         self.assertTrue(DictionaryForText._proper_name_checker('Murzik'))
@@ -307,6 +307,48 @@ class Test(TestCase):
         self.assertFalse('created' in words)
         self.assertEqual(
             {'called': 'call', 'created': 'create'}, dic.get_drop_end_ed()
+        )
+
+    def test_has_end_ing(self):
+        self.assertTrue(DictionaryForText._end_ing_checker('making'))
+        self.assertTrue(DictionaryForText._end_ing_checker('dropping'))
+
+        self.assertFalse(DictionaryForText._end_ing_checker('make'))
+        self.assertFalse(DictionaryForText._end_ing_checker('drop'))
+
+    def test_drop_end_ing(self):
+        end_key = 'end_ing'
+        keep, drop = DictionaryForText._drop_ends(
+            {
+                'make': 1, 'making': 1,
+                'running': 2, 'run': 2,
+                'craft': 4, 'crafting': 4,
+                'string': 5
+            },
+            end_key
+        )
+        self.assertEqual({'make': 2, 'run': 4, 'craft': 8, 'string': 5}, keep)
+        self.assertEqual(
+            {
+                'making': 'make',
+                'running': 'run',
+                'crafting': 'craft'
+            }, drop[end_key]
+        )
+
+    def test_prepare_drop_end_ing(self):
+        self.stream = StringIO(
+            'th the thing are running during I am run too. Music is dur'
+        )
+        dic = DictionaryForText(self.stream)
+        words = dic.prepare()
+        self.assertEqual(1, words['thing'])
+        self.assertEqual(1, words['during'])
+        self.assertEqual(2, words['run'])
+
+        self.assertFalse('running' in words)
+        self.assertEqual(
+            {'running': 'run'}, dic.get_drop_end_ing()
         )
 
     def test_exceptions(self):
