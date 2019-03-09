@@ -173,6 +173,7 @@ class DictionaryForText:
             'end_ed': {
                 'checker': cls._end_ed_checker,
                 'excision': slice(0, -2),
+                'excision_add': cls._droper_last_repeated_letter,
                 'substitute': ('e', ''),
                 'exception': ('seed', 'speed')
             },

@@ -279,6 +279,7 @@ class Test(TestCase):
     def test_has_end_ed(self):
         self.assertTrue(DictionaryForText._end_ed_checker('called'))
         self.assertTrue(DictionaryForText._end_ed_checker('created'))
+        self.assertTrue(DictionaryForText._end_ed_checker('dropped'))
 
         self.assertFalse(DictionaryForText._end_ed_checker('call'))
         self.assertFalse(DictionaryForText._end_ed_checker('create'))
@@ -287,12 +288,21 @@ class Test(TestCase):
     def test_drop_end_ed(self):
         end_key = 'end_ed'
         keep, drop = DictionaryForText._drop_ends(
-            {'called': 2, 'call': 3, 'word': 1, 'create': 4, 'created': 5},
+            {
+                'called': 2, 'call': 3,
+                'word': 1,
+                'create': 4, 'created': 5,
+                'drop': 1, 'dropped': 1
+            },
             end_key
         )
-        self.assertEqual({'call': 5, 'word': 1, 'create': 9}, keep)
+        self.assertEqual({'call': 5, 'word': 1, 'create': 9, 'drop': 2}, keep)
         self.assertEqual(
-            {'called': 'call', 'created': 'create'}, drop[end_key]
+            {
+                'called': 'call',
+                'created': 'create',
+                'dropped': 'drop'
+            }, drop[end_key]
         )
 
     def test_prepare_drop_end_ed(self):
